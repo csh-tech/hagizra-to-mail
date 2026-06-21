@@ -1,0 +1,4 @@
+node_modules/
+.env
+data/last_id.json
+data/outbox-*.json

@@ -1,0 +1,62 @@
+name: Hagizra to Mail (scheduled)
+
+on:
+  schedule:
+    # Backup: GitHub's own cron (unreliable, but kept as fallback)
+    - cron: '*/15 * * * *'
+  workflow_dispatch: {}
+  # Triggered by cron-job.org via HTTP POST for reliable 15-min scheduling
+  repository_dispatch:
+    types: [run-hagizra]
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Read lastId from GitHub Variable and write it to data/last_id.json
+      - name: Restore lastId from GitHub Variable
+        run: |
+          mkdir -p data
+          LAST_ID="${{ vars.LAST_ID }}"
+          if [ -z "$LAST_ID" ]; then LAST_ID="0"; fi
+          echo "{\"lastId\": $LAST_ID}" > data/last_id.json
+          echo "Restored lastId: $LAST_ID"
+
+      - name: Run Hagizra (once)
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          RUN_ONCE: '1'
+        run: node src/index.js
+
+      # Read the updated lastId and save it back to GitHub Variable
+      - name: Save lastId to GitHub Variable
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -f data/last_id.json ]; then
+            NEW_ID=$(node -e "console.log(require('./data/last_id.json').lastId || 0)")
+            echo "Saving lastId: $NEW_ID"
+            gh variable set LAST_ID --body "$NEW_ID"
+          else
+            echo "No last_id.json found, skipping save"
+          fi
