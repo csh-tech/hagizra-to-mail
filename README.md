@@ -76,14 +76,15 @@ node scripts/preview_email.js
 1. צרו משתמש חינמי באתר [cron-job.org](https://cron-job.org/).
 2. בלוח הבקרה, צרו עבודה חדשה (Create Cronjob).
 3. **Title:** בחרו שם (לדוגמה: Hagizra to Mail).
-4. **URL:** הכניסו את הכתובת הבאה (הקפידו להחליף את `YOUR_USERNAME` בשם המשתמש שלכם בגיטהאב ואת `YOUR_REPO` בשם המאגר):
-   `https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO/dispatches`
+4. **URL:** הכניסו את הכתובת הבאה (הקפידו להחליף את `csh-tech` בשם המשתמש שלכם בגיטהאב ואת `hagizra-to-mail` בשם המאגר):
+   `https://api.github.com/repos/csh-tech/hagizra-to-mail/dispatches`
 5. **Execution schedule:** בחרו שיופעל **כל 15 דקות**.
 6. בלשונית **Advanced**:
    * שנו את ה-**HTTP method** ל- `POST`.
-   * תחת **Headers**, הוסיפו שני מפתחות:
+   * תחת **Headers**, הוסיפו את המפתחות:
      1. Key: `Accept` | Value: `application/vnd.github.v3+json`
-     2. Key: `Authorization` | Value: `Bearer YOUR_GH_PAT` *(החליפו את `YOUR_GH_PAT` בטוקן ה-GH_PAT שיצרתם קודם).*
+     2. Key: `Content-Type` | Value: `application/json`
+     3. Key: `Authorization` | Value: `Bearer YOUR_GH_PAT` *(החליפו את `YOUR_GH_PAT` בטוקן ה-GH_PAT שיצרתם קודם).* 
    * תחת **Body**, סמנו את תיבת הטקסט והכניסו את ה-JSON הבא:
      ```json
      {
